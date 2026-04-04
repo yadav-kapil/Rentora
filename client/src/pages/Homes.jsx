@@ -78,14 +78,14 @@ const Homes = () => {
             </NavLink>
 
             {/* Actions OUTSIDE NavLink */}
-            <div onClick={() => handleEdit(home._id)} className="flex justify-left gap-4 p-4">
-              <button className="rounded-lg bg-black text-white px-2 py-1 hover:scale-95 hover:bg-gray-700 transition-all cursor-pointer">
+            <div className="flex justify-left gap-4 p-4">
+              <button onClick={() => handleEdit(home._id)} className="rounded-lg bg-black text-white px-2 py-1 hover:scale-95 hover:bg-gray-700 transition-all cursor-pointer">
                 Edit
               </button>
 
               <button
                 onClick={() => handleDelete(home._id)}
-                className="rounded-lg bg-red-600 text-white px-2 py-1 hover:scale-95 hover:bg-red-500 cursor-pointer"
+                className="rounded-lg bg-red-600 text-white px-2 py-1 hover:scale-95 hover:bg-red-500 cursor-pointer transition-all"
               >
                 Delete
               </button>

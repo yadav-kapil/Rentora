@@ -4,12 +4,15 @@ const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
 const cors = require("cors");
+
 const wrapAsync = require("./utils/wrapAsync");
 const ExpressError = require("./utils/ExpressError");
-const homeValidation = require("./middlewares/homeSchemaValidation.middleware.js");
+const homeValidation = require("./middlewares/homeValidation.middleware.js");
+const reviewValidation = require("./middlewares/reviewValidation.middleware.js");
 
 // Models
 const Home = require("./models/homes");
+const Review = require("./models/reviews");
 
 // MiddleWares
 app.use(express.json());
@@ -32,7 +35,7 @@ app.get(
   "/api/homes/:id",
   wrapAsync(async (req, res) => {
     const id = req.params.id;
-    const home = await Home.findById(id);
+    const home = await Home.findById(id).populate("reviews");
     if (!home) {
       throw new ExpressError(404, "Home Not Found");
     }
@@ -68,14 +71,61 @@ app.put(
 app.delete(
   "/api/homes/:id",
   wrapAsync(async (req, res) => {
-    const deletedHome = await Home.findByIdAndDelete(req.params.id);
-    if (!deletedHome) {
+    const home = await Home.findById(req.params.id);
+    if (!home) {
       throw new ExpressError(404, "Home Not Found");
     }
+    await Review.deleteMany({ _id: { $in: home.reviews } });
+    await Home.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: "Successfully Deleted Home" });
   }),
 );
 
+//reviews
+app.post(
+  "/api/homes/:id/reviews",
+  reviewValidation,
+  wrapAsync(async (req, res) => {
+    const newReview = new Review(req.body.review);
+    console.log(newReview);
+
+    const home = await Home.findById(req.params.id);
+
+    console.log(home);
+    if (!home) {
+      throw new ExpressError(404, "Home not found");
+    }
+    home.reviews.push(newReview._id);
+    await newReview.save();
+    await home.save();
+
+    return res.status(201).json({ message: "Successfully Saved Review" });
+  }),
+);
+
+app.delete(
+  "/api/homes/:id/reviews/:reviewId",
+  wrapAsync(async (req, res) => {
+    const { id, reviewId } = req.params;
+    const home = await Home.findById(id);
+    if (!home) {
+      throw new ExpressError(404, "Home not found");
+    }
+    await Home.findByIdAndUpdate(id, {
+      $pull: { reviews: reviewId },
+    });
+    const review = await Review.findByIdAndDelete(reviewId);
+    if (!review) {
+      throw new ExpressError(404, "Review not found");
+    }
+    res.status(200).json({
+      success: true,
+      message: "Successfully Deleted Review",
+    });
+  }),
+);
+
+// Error Handlers
 app.use((req, res, next) => {
   next(new ExpressError(404, "Page Not Found"));
 });
