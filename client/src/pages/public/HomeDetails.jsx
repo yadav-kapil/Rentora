@@ -3,7 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import Review from "../../components/public/Review";
 import BookingModal from "../../components/app/guest/BookingModal";
 import useAuth from "../../hooks/useAuth";
-import { FaMapMarkerAlt, FaStar, FaUserFriends, FaBed, FaHome, FaCheckCircle, FaUserCircle, FaShieldAlt } from "react-icons/fa";
+import { FaMapMarkerAlt, FaStar, FaUserFriends, FaBed, FaHome, FaCheckCircle, FaUserCircle, FaShieldAlt, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { AnimatePresence, motion } from "motion/react";
 
 const HomeDetailsSkeleton = () => (
   <div className="max-w-6xl mx-auto px-4 py-8 md:px-6 md:py-12 animate-pulse">
@@ -56,6 +57,9 @@ const Home = () => {
   const [error, setError] = useState(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
+  const [currentImgIndex, setCurrentImgIndex] = useState(0);
+  const [direction, setDirection] = useState(0);
+
   useEffect(() => {
     const fetchHome = async () => {
       setLoading(true);
@@ -76,12 +80,35 @@ const Home = () => {
     fetchHome();
   }, [id]);
 
-  if (loading) return <HomeDetailsSkeleton />;
-  if (error) return <div className="text-center py-20 text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-orange-500 font-bold text-xl">{error}</div>;
-  if (!home) return null;
+  const images = home?.imageUrls && home.imageUrls.length > 0 ? home.imageUrls : (home?.imageUrl ? [home.imageUrl] : []);
 
-  const totalRating = home?.reviews?.reduce((acc, rev) => acc + rev.rating, 0) || 0;
-  const avgRating = home?.reviews?.length ? (totalRating / home.reviews.length).toFixed(1) : 0;
+  const handleNext = () => {
+    if (images.length <= 1) return;
+    setDirection(1);
+    setCurrentImgIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const handlePrev = () => {
+    if (images.length <= 1) return;
+    setDirection(-1);
+    setCurrentImgIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const handleKeyDown = (e) => {
+      if (document.activeElement && (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA")) {
+        return;
+      }
+      if (e.key === "ArrowRight") {
+        handleNext();
+      } else if (e.key === "ArrowLeft") {
+        handlePrev();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [images.length, currentImgIndex]);
 
   const handleBookClick = () => {
     if (!isLoggedin) {
@@ -90,6 +117,13 @@ const Home = () => {
     }
     setIsBookingModalOpen(true);
   };
+
+  if (loading) return <HomeDetailsSkeleton />;
+  if (error) return <div className="text-center py-20 text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-orange-500 font-bold text-xl">{error}</div>;
+  if (!home) return null;
+
+  const totalRating = home?.reviews?.reduce((acc, rev) => acc + rev.rating, 0) || 0;
+  const avgRating = home?.reviews?.length ? (totalRating / home.reviews.length).toFixed(1) : 0;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 md:px-6 md:py-12">
@@ -119,13 +153,84 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Image Gallery */}
-      <div className="w-full h-64 sm:h-96 md:h-[500px] rounded-3xl overflow-hidden mb-12 shadow-sm border border-gray-100 dark:border-slate-800/80 bg-gray-100 dark:bg-slate-800/40">
-        <img
-          src={home.imageUrl}
-          alt={home.title}
-          className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-        />
+      {/* Image Gallery Slider */}
+      <div className="w-full h-64 sm:h-96 md:h-[500px] rounded-3xl overflow-hidden mb-12 shadow-sm border border-gray-100 dark:border-slate-800/80 bg-gray-100 dark:bg-slate-800/40 relative group">
+        <AnimatePresence initial={false} custom={direction}>
+          <motion.img
+            key={currentImgIndex}
+            src={images[currentImgIndex]}
+            custom={direction}
+            variants={{
+              enter: (dir) => ({
+                x: dir > 0 ? "100%" : dir < 0 ? "-100%" : 0,
+                opacity: 0
+              }),
+              center: {
+                x: 0,
+                opacity: 1
+              },
+              exit: (dir) => ({
+                x: dir < 0 ? "100%" : dir > 0 ? "-100%" : 0,
+                opacity: 0
+              })
+            }}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 }
+            }}
+            className="absolute inset-0 w-full h-full object-cover"
+            alt={`${home.title} view ${currentImgIndex + 1}`}
+          />
+        </AnimatePresence>
+
+        {/* Navigation Arrows */}
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={handlePrev}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-white/80 dark:bg-slate-900/80 text-gray-800 dark:text-white flex items-center justify-center backdrop-blur-sm shadow-md hover:bg-white dark:hover:bg-slate-900 transition active:scale-95 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            >
+              <FaChevronLeft size={16} />
+            </button>
+            <button
+              onClick={handleNext}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-white/80 dark:bg-slate-900/80 text-gray-800 dark:text-white flex items-center justify-center backdrop-blur-sm shadow-md hover:bg-white dark:hover:bg-slate-900 transition active:scale-95 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            >
+              <FaChevronRight size={16} />
+            </button>
+          </>
+        )}
+
+        {/* Slide Counter Badge */}
+        {images.length > 1 && (
+          <div className="absolute top-4 right-4 z-10 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full select-none">
+            {currentImgIndex + 1} / {images.length}
+          </div>
+        )}
+
+        {/* Slide Dots Indicator */}
+        {images.length > 1 && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
+            {images.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  setDirection(idx > currentImgIndex ? 1 : -1);
+                  setCurrentImgIndex(idx);
+                }}
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                  idx === currentImgIndex
+                    ? "bg-white scale-120 shadow-md w-5"
+                    : "bg-white/50 hover:bg-white/80"
+                }`}
+                title={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Details Split */}

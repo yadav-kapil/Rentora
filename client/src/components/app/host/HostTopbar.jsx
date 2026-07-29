@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from "motion/react";
 import ProfileModal from "./ProfileModal";
 import SettingsModal from "./SettingsModal";
 import LoadingModal from "../../public/common/LoadingModal";
+import NotificationPopup from "../../public/common/NotificationPopup";
+import ThemeToggle from "../../public/common/ThemeToggle";
 
 const HostTopbar = () => {
   const { logout, isLoading } = useLogout();
@@ -19,6 +21,83 @@ const HostTopbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isFabStashed, setIsFabStashed] = useState(false);
   const dropdownRef = useRef(null);
+
+  // Notification States
+  const [notifications, setNotifications] = useState([]);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [notifLoading, setNotifLoading] = useState(false);
+
+  // Fetch notifications silently on mount to show badge count
+  useEffect(() => {
+    if (user) {
+      fetchNotificationsSilent();
+    }
+  }, [user]);
+
+  const fetchNotificationsSilent = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/notifications`, {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.notifications || []);
+      }
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const handleNotifClick = async () => {
+    setIsNotifOpen(!isNotifOpen);
+    if (!isNotifOpen) {
+      setNotifLoading(true);
+      try {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/notifications`, {
+          credentials: "include",
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setNotifications(data.notifications || []);
+        }
+      } catch {
+        // ignore
+      } finally {
+        // 600ms artificial delay to clearly demonstrate the skeleton loading popup!
+        setTimeout(() => {
+          setNotifLoading(false);
+        }, 600);
+      }
+    }
+  };
+
+  const handleMarkRead = async (id) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/notifications/${id}/read`, {
+        method: "PATCH",
+        credentials: "include",
+      });
+      if (res.ok) {
+        setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/notifications/read-all`, {
+        method: "PATCH",
+        credentials: "include",
+      });
+      if (res.ok) {
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      }
+    } catch {
+      // ignore
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -107,9 +186,30 @@ const HostTopbar = () => {
           
           <div className="w-px h-6 bg-gray-200 dark:bg-slate-700 hidden md:block"></div>
 
-          <div className="relative cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors text-gray-600 dark:text-slate-300">
-            <FaBell className="text-lg" />
-            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-gradient-to-r from-red-600 to-orange-500 border-2 border-white rounded-full"></span>
+          <ThemeToggle />
+
+          <div className="relative">
+            <div 
+              onClick={handleNotifClick}
+              className="relative cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors text-gray-600 dark:text-slate-300"
+            >
+              <FaBell className="text-lg" />
+              {notifications.some(n => !n.isRead) && (
+                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-gradient-to-r from-red-600 to-orange-500 border-2 border-white rounded-full"></span>
+              )}
+            </div>
+            <AnimatePresence>
+              {isNotifOpen && (
+                <NotificationPopup 
+                  isOpen={isNotifOpen}
+                  onClose={() => setIsNotifOpen(false)}
+                  notifications={notifications}
+                  loading={notifLoading}
+                  onMarkAllRead={handleMarkAllRead}
+                  onMarkRead={handleMarkRead}
+                />
+              )}
+            </AnimatePresence>
           </div>
 
           <div className="relative" ref={dropdownRef}>

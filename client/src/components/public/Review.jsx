@@ -8,10 +8,15 @@ import useAuth from "../../hooks/useAuth";
 
 const Review = ({ id, reviews }) => {
   const revalidator = useRevalidator();
+  const [localReviews, setLocalReviews] = useState(reviews || []);
   const [showAddReview, setShowAddReview] = useState(false);
   const [hasBooked, setHasBooked] = useState(null);
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const { isLoggedin, user } = useAuth();
+
+  useEffect(() => {
+    setLocalReviews(reviews || []);
+  }, [reviews]);
 
   useEffect(() => {
     if (isLoggedin && user?.role === "User") {
@@ -50,6 +55,10 @@ const Review = ({ id, reviews }) => {
     }
   };
 
+  const handleAddReviewState = (newReview) => {
+    setLocalReviews((prev) => [newReview, ...prev]);
+  };
+
   const handleDelete = async (reviewId) => {
     try {
       const res = await fetch(
@@ -65,6 +74,7 @@ const Review = ({ id, reviews }) => {
         throw new Error(data.message || "Failed To Delete");
       }
 
+      setLocalReviews((prev) => prev.filter((r) => r._id !== reviewId));
       revalidator.revalidate();
     } catch (err) {
       alert(err.message); 
@@ -103,7 +113,7 @@ const Review = ({ id, reviews }) => {
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="mb-10 overflow-hidden"
           >
-            <AddReview id={id} onSuccess={() => setShowAddReview(false)} />
+            <AddReview id={id} onSuccess={() => setShowAddReview(false)} onAddReview={handleAddReviewState} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -116,7 +126,7 @@ const Review = ({ id, reviews }) => {
       />
 
       {/* Empty State */}
-      {(!reviews || reviews.length === 0) && (
+      {(!localReviews || localReviews.length === 0) && (
         <div className="bg-gray-50/60 dark:bg-[#0e1422] border border-transparent dark:border-slate-800/80 rounded-2xl p-8 text-center text-gray-400 dark:text-slate-500 font-medium text-sm animate-fade-in">
           No reviews yet. Be the first to share your experience!
         </div>
@@ -125,7 +135,7 @@ const Review = ({ id, reviews }) => {
       {/* Reviews List */}
       <div className="space-y-6">
         <AnimatePresence initial={false}>
-          {reviews?.map((rev, index) => (
+          {localReviews?.map((rev, index) => (
             <motion.div
               key={rev._id}
               initial={{ opacity: 0, y: 15 }}

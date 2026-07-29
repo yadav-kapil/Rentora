@@ -88,7 +88,7 @@ const postSignUp = wrapAsync(async (req, res) => {
     });
 });
 
-//LOGOUT
+// LOGOUT
 const postLogout = wrapAsync(async (req, res) => {
   return res
     .clearCookie("token", {
@@ -102,7 +102,71 @@ const postLogout = wrapAsync(async (req, res) => {
     });
 });
 
+// UPDATE PROFILE (Name, Phone, Address, Bio, Avatar / DP - keeps Email read-only)
+const updateProfile = wrapAsync(async (req, res) => {
+  const { name, phone, address, bio, dp } = req.body;
+  
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    throw new ExpressError(404, "User not found");
+  }
+
+  if (name !== undefined) user.name = name;
+  if (phone !== undefined) user.phone = phone;
+  if (address !== undefined) user.address = address;
+  if (bio !== undefined) user.bio = bio;
+
+  // Handle uploaded file from Multer / Cloudinary
+  if (req.file && (req.file.path || req.file.secure_url)) {
+    user.dp = req.file.path || req.file.secure_url;
+  } else if (dp !== undefined) {
+    user.dp = dp;
+  }
+
+  await user.save();
+
+  const userResponse = user.toObject();
+  delete userResponse.password;
+  userResponse.id = userResponse._id;
+
+  return res.status(200).json({
+    success: true,
+    message: "Profile updated successfully",
+    user: userResponse,
+  });
+});
+
+// CHANGE PASSWORD (verifying oldPassword)
+const changePassword = wrapAsync(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  if (!oldPassword || !newPassword) {
+    throw new ExpressError(400, "Old password and new password are required");
+  }
+
+  const user = await User.findById(req.user._id).select("+password");
+  if (!user) {
+    throw new ExpressError(404, "User not found");
+  }
+
+  const match = await bcrypt.compare(oldPassword, user.password);
+  if (!match) {
+    throw new ExpressError(400, "Incorrect current password");
+  }
+
+  const hashPassword = await bcrypt.hash(newPassword, 10);
+  user.password = hashPassword;
+  await user.save();
+
+  return res.status(200).json({
+    success: true,
+    message: "Password changed successfully",
+  });
+});
+
 exports.postLogin = postLogin;
 exports.postSignUp = postSignUp;
 exports.postLogout = postLogout;
 exports.getMe = getMe;
+exports.updateProfile = updateProfile;
+exports.changePassword = changePassword;

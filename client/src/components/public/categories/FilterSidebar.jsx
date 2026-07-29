@@ -86,16 +86,16 @@ const FilterSidebar = ({ allHomes, setDisplayedHomes, filters, setFilters }) => 
       {/* Categories */}
       <div className="mb-8">
         <h4 className="font-bold text-sm text-gray-800 dark:text-slate-200 mb-4">Categories</h4>
-        <div className="grid grid-cols-2 gap-3">
-          {["Villa", "Apartment", "Duplex", "Cottage", "Penthouse", "Studio"].map((type) => (
-            <label key={type} className="flex items-center gap-2 cursor-pointer">
+        <div className="space-y-2.5">
+          {["Beachfront", "Apartment", "Villa", "Cabin", "Farmhouse"].map((type) => (
+            <label key={type} className="flex items-center gap-2.5 cursor-pointer group">
               <input 
                 type="checkbox" 
                 checked={filters.categories.includes(type)}
                 onChange={() => updateFilter('categories', type)}
-                className="w-4 h-4 rounded border-gray-300 dark:border-slate-700 accent-red-600 focus:ring-red-500" 
+                className="w-4.5 h-4.5 rounded border-gray-300 dark:border-slate-700 text-red-600 focus:ring-red-500/20 focus:ring-offset-0 transition-colors duration-150 cursor-pointer accent-red-600" 
               />
-              <span className="text-sm font-medium text-gray-600 dark:text-slate-300">{type}</span>
+              <span className="text-sm font-medium text-gray-655 dark:text-slate-350 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-150">{type}</span>
             </label>
           ))}
         </div>
@@ -112,10 +112,11 @@ const FilterSidebar = ({ allHomes, setDisplayedHomes, filters, setFilters }) => 
             return (
               <button
                 key={num}
+                type="button"
                 onClick={() => updateFilter('bedrooms', num)}
-                className={`w-10 h-10 rounded-xl font-bold text-sm flex items-center justify-center transition-colors border ${
+                className={`w-10 h-10 rounded-xl font-bold text-sm flex items-center justify-center transition-all duration-200 border cursor-pointer ${
                   isActive 
-                    ? "bg-red-50 dark:bg-red-950/40 text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-orange-500 border-red-200 dark:border-red-900/50 shadow-sm" 
+                    ? "bg-red-50 dark:bg-red-950/40 text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-orange-500 border-red-300 dark:border-red-900/50 shadow-sm font-extrabold" 
                     : "bg-white dark:bg-[#141b2d] text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-700/60 hover:border-gray-300 dark:hover:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-800/60"
                 }`}
               >
@@ -131,24 +132,32 @@ const FilterSidebar = ({ allHomes, setDisplayedHomes, filters, setFilters }) => 
       {/* Amenities */}
       <div className="mb-6">
         <h4 className="font-bold text-sm text-gray-800 dark:text-slate-200 mb-4">Amenities</h4>
-        <div className="space-y-3">
-          {["Wi-Fi", "Pool", "Kitchen", "Parking", "Air Conditioning", "Pet Friendly"].map((amenity) => (
-            <label key={amenity} className="flex items-center gap-2 cursor-pointer">
+        <div className="space-y-2.5">
+          {[
+            { value: "WiFi", label: "Wi-Fi" },
+            { value: "Swimming Pool", label: "Swimming Pool" },
+            { value: "Kitchen", label: "Kitchen" },
+            { value: "Free Parking", label: "Free Parking" },
+            { value: "Air Conditioning", label: "Air Conditioning" },
+            { value: "Pet Friendly", label: "Pet Friendly" },
+            { value: "TV", label: "TV" },
+            { value: "Balcony", label: "Balcony" },
+            { value: "Gym", label: "Gym" },
+            { value: "Washing Machine", label: "Laundry" }
+          ].map((amenity) => (
+            <label key={amenity.value} className="flex items-center gap-2.5 cursor-pointer group">
               <input 
                 type="checkbox" 
-                checked={filters.amenities.includes(amenity)}
-                onChange={() => updateFilter('amenities', amenity)}
-                className="w-4 h-4 rounded border-gray-300 dark:border-slate-700 accent-red-600 focus:ring-red-500" 
+                checked={filters.amenities.includes(amenity.value)}
+                onChange={() => updateFilter('amenities', amenity.value)}
+                className="w-4.5 h-4.5 rounded border-gray-300 dark:border-slate-700 text-red-600 focus:ring-red-500/20 focus:ring-offset-0 transition-colors duration-150 cursor-pointer accent-red-600" 
               />
-              <span className="text-sm font-medium text-gray-600 dark:text-slate-300">{amenity}</span>
+              <span className="text-sm font-medium text-gray-655 dark:text-slate-350 group-hover:text-gray-900 dark:group-hover:text-white transition-colors duration-150">{amenity.label}</span>
             </label>
           ))}
         </div>
       </div>
 
-      <button className="flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-orange-500 font-bold text-sm hover:text-red-700 transition-colors">
-        Show more <HiOutlineChevronDown />
-      </button>
     </div>
   );
 };

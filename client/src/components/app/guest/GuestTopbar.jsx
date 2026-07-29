@@ -1,4 +1,4 @@
-import { FaBell, FaChevronDown, FaSignOutAlt, FaHome, FaList, FaUser, FaCog, FaBars, FaTimes, FaCalendarAlt, FaChevronRight, FaChevronLeft } from "react-icons/fa";
+import { FaBell, FaChevronDown, FaSignOutAlt, FaHome, FaList, FaUser, FaCog, FaBars, FaTimes, FaCalendarAlt, FaChevronRight, FaChevronLeft, FaHeart } from "react-icons/fa";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useLogout } from "../../../hooks/useLogout";
 import useAuth from "../../../hooks/useAuth";
@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from "motion/react";
 import LoadingModal from "../../public/common/LoadingModal";
 import ProfileModal from "./ProfileModal";
 import SettingsModal from "./SettingsModal";
+import NotificationPopup from "../../public/common/NotificationPopup";
+import ThemeToggle from "../../public/common/ThemeToggle";
 
 const GuestTopbar = () => {
   const { logout, isLoading } = useLogout();
@@ -19,6 +21,83 @@ const GuestTopbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isFabStashed, setIsFabStashed] = useState(false);
   const dropdownRef = useRef(null);
+
+  // Notification States
+  const [notifications, setNotifications] = useState([]);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [notifLoading, setNotifLoading] = useState(false);
+
+  // Fetch notifications silently on mount to show badge count
+  useEffect(() => {
+    if (user) {
+      fetchNotificationsSilent();
+    }
+  }, [user]);
+
+  const fetchNotificationsSilent = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/notifications`, {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data.notifications || []);
+      }
+    } catch (err) {
+      // ignore
+    }
+  };
+
+  const handleNotifClick = async () => {
+    setIsNotifOpen(!isNotifOpen);
+    if (!isNotifOpen) {
+      setNotifLoading(true);
+      try {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/notifications`, {
+          credentials: "include",
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setNotifications(data.notifications || []);
+        }
+      } catch {
+        // ignore
+      } finally {
+        // 600ms artificial delay to clearly demonstrate the skeleton loading popup!
+        setTimeout(() => {
+          setNotifLoading(false);
+        }, 600);
+      }
+    }
+  };
+
+  const handleMarkRead = async (id) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/notifications/${id}/read`, {
+        method: "PATCH",
+        credentials: "include",
+      });
+      if (res.ok) {
+        setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/notifications/read-all`, {
+        method: "PATCH",
+        credentials: "include",
+      });
+      if (res.ok) {
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      }
+    } catch {
+      // ignore
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -103,13 +182,43 @@ const GuestTopbar = () => {
                   My Bookings
                 </NavLink>
               </li>
+              <li>
+                <NavLink 
+                  to="/guest/wishlist" 
+                  viewTransition
+                  className={({ isActive }) => isActive ? "text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-orange-500" : "text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-100 transition"}
+                >
+                  Wishlist
+                </NavLink>
+              </li>
             </ul>
             
             <div className="w-px h-6 bg-gray-200 dark:bg-slate-700 hidden sm:block"></div>
 
-            <div className="relative cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors text-gray-600 dark:text-slate-300">
-              <FaBell className="text-lg" />
-              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-gradient-to-r from-red-600 to-orange-500 border-2 border-white rounded-full"></span>
+            <ThemeToggle />
+
+            <div className="relative">
+              <div 
+                onClick={handleNotifClick}
+                className="relative cursor-pointer p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-colors text-gray-600 dark:text-slate-300"
+              >
+                <FaBell className="text-lg" />
+                {notifications.some(n => !n.isRead) && (
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-gradient-to-r from-red-600 to-orange-500 border-2 border-white rounded-full"></span>
+                )}
+              </div>
+              <AnimatePresence>
+                {isNotifOpen && (
+                  <NotificationPopup 
+                    isOpen={isNotifOpen}
+                    onClose={() => setIsNotifOpen(false)}
+                    notifications={notifications}
+                    loading={notifLoading}
+                    onMarkAllRead={handleMarkAllRead}
+                    onMarkRead={handleMarkRead}
+                  />
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Profile Dropdown */}
@@ -205,6 +314,12 @@ const GuestTopbar = () => {
               className="flex items-center gap-3 bg-white dark:bg-slate-800 px-5 py-3 rounded-full shadow-xl border border-gray-100 dark:border-slate-700 text-sm font-bold text-gray-700 dark:text-slate-200 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
             >
               My Bookings <FaCalendarAlt className="text-lg text-red-500" />
+            </button>
+            <button 
+              onClick={() => { setIsMobileMenuOpen(false); navigate("/guest/wishlist"); }}
+              className="flex items-center gap-3 bg-white dark:bg-slate-800 px-5 py-3 rounded-full shadow-xl border border-gray-100 dark:border-slate-700 text-sm font-bold text-gray-700 dark:text-slate-200 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
+            >
+              Wishlist <FaHeart className="text-lg text-red-500" />
             </button>
             <button 
               onClick={() => { setIsMobileMenuOpen(false); setIsProfileModalOpen(true); }}

@@ -21,9 +21,22 @@ const userSchema = new mongoose.Schema({
     },
     dp: {
         type: String,
-        required: false
+        required: false,
+        default: ""
+    },
+    phone: {
+        type: String,
+        default: ""
+    },
+    address: {
+        type: String,
+        default: ""
+    },
+    bio: {
+        type: String,
+        default: ""
     }
-});
+}, { timestamps: true });
 
 
 const User = mongoose.model('User', userSchema);

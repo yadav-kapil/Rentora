@@ -3,6 +3,7 @@ import HomePage from "../pages/public/HomePage";
 import Categories from "../pages/public/Categories";
 import HomeDetails from "../pages/public/HomeDetails";
 import MyBookings from "../pages/guest/MyBookings";
+import Wishlist from "../pages/guest/Wishlist";
 
 export const guestRoutes = {
   path: "/guest",
@@ -27,6 +28,10 @@ export const guestRoutes = {
     {
       path: "bookings",
       element: <MyBookings />,
+    },
+    {
+      path: "wishlist",
+      element: <Wishlist />,
     }
   ],
 };

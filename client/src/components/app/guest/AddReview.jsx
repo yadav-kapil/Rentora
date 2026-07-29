@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { useRevalidator } from "react-router-dom";
 
-const AddReview = ({ id, onSuccess }) => {
+const AddReview = ({ id, onSuccess, onAddReview }) => {
   const revalidator = useRevalidator();
   const [isSubmitting, setSubmitState] = useState("Submit");
   const [reviewError, setReviewError] = useState("");
@@ -43,9 +43,15 @@ const AddReview = ({ id, onSuccess }) => {
       if (!res.ok) {
         throw new Error("Failed to submit review");
       }
+      const data = await res.json();
       setRating(0);
       descriptionRef.current.value = "";
       setSuccess("Review submitted successfully!");
+      
+      if (onAddReview && data.review) {
+        onAddReview(data.review);
+      }
+
       setTimeout(() => {
         setSuccess("");
         if (onSuccess) onSuccess();

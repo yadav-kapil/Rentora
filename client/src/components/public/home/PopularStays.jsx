@@ -1,8 +1,12 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import { FaHome, FaMapMarkerAlt, FaStar, FaRegHeart } from "react-icons/fa";
+import { FaHome, FaMapMarkerAlt, FaStar, FaRegBookmark, FaBookmark } from "react-icons/fa";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { FaArrowRightLong } from "react-icons/fa6";
+import useAuth from "../../../hooks/useAuth";
+import LoadingModal from "../common/LoadingModal";
+import SuccessModal from "../common/SuccessModal";
+import ErrorModal from "../common/ErrorModal";
 
 const SkeletonCard = () => (
   <div className="bg-white dark:bg-[#0e1422] rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between h-[340px] animate-pulse border border-gray-100 dark:border-slate-800/80">
@@ -28,8 +32,18 @@ const PopularStays = () => {
   const [error, setError] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { isLoggedin, user } = useAuth();
 
   const isGuest = location.pathname.startsWith("/guest");
+
+  const [wishlistIds, setWishlistIds] = useState([]);
+
+  // Feedback Modal States
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
+  const [isErrorOpen, setIsErrorOpen] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     const fetchHomes = async () => {
@@ -49,6 +63,63 @@ const PopularStays = () => {
     
     fetchHomes();
   }, []);
+
+  useEffect(() => {
+    if (isLoggedin && user?.role === "User") {
+      fetchWishlistIds();
+    }
+  }, [isLoggedin, user]);
+
+  const fetchWishlistIds = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/wishlist/ids`, {
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setWishlistIds(data.wishlistIds || []);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleWishlistToggle = async (e, homeId) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isLoggedin) {
+      navigate("/login");
+      return;
+    }
+
+    setIsActionLoading(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/wishlist/toggle`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ homeId }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update wishlist");
+
+      const data = await res.json();
+      if (data.isWishlisted) {
+        setWishlistIds((prev) => [...prev, homeId]);
+        setSuccessMsg("Home saved to your wishlist!");
+      } else {
+        setWishlistIds((prev) => prev.filter((id) => id !== homeId));
+        setSuccessMsg("Home removed from your wishlist.");
+      }
+      setIsSuccessOpen(true);
+    } catch (err) {
+      setErrorMsg(err.message || "Something went wrong");
+      setIsErrorOpen(true);
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
 
   return (
     <div className="mb-20">
@@ -95,9 +166,9 @@ const PopularStays = () => {
           </>
         ) : (
           homes.slice(0, 4).map((home, index) => {
-            // Calculate average rating
             const totalRating = home.reviews?.reduce((acc, rev) => acc + rev.rating, 0) || 0;
             const avgRating = home.reviews?.length ? (totalRating / home.reviews.length).toFixed(1) : 0;
+            const isWishlisted = wishlistIds.includes(home._id);
 
             return (
               <motion.div
@@ -108,28 +179,48 @@ const PopularStays = () => {
                 transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
                 className="h-full"
               >
-                <div className="bg-white dark:bg-[#0e1422] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-black/80 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative border border-gray-50 dark:border-slate-800/80 group h-full">
+                <div className="bg-white dark:bg-[#0e1422] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-black/80 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between relative border border-gray-50 dark:border-slate-800/80 group/card h-full">
                   <NavLink viewTransition to={isGuest ? `/guest/homes/${home._id}` : `/homes/${home._id}`} className="flex-grow flex flex-col">
-                    {/* Image Container with Badge */}
+                    {/* Image Container with Badge & Hover Bookmark */}
                     <div className="h-48 w-full overflow-hidden relative">
-                      {/* Active Badge */}
-                      <div className="absolute top-3 right-3 bg-white/90 dark:bg-[#090d16]/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1.5 z-10 border border-transparent dark:border-slate-700/50">
-                        <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
-                        <span className="text-[9px] font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider font-ubuntu">
-                          Active
-                        </span>
-                      </div>
+                      {/* Bookmark Save Button - always visible on mobile & tablet, hover on desktop */}
+                      <button
+                        type="button"
+                        onClick={(e) => handleWishlistToggle(e, home._id)}
+                        className={`absolute top-3 right-3 z-20 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-300 shadow-md cursor-pointer ${
+                          isWishlisted
+                            ? "bg-white/90 dark:bg-slate-900/90 text-red-500 opacity-100 scale-100"
+                            : "bg-white/80 dark:bg-slate-900/80 text-gray-700 dark:text-slate-200 max-lg:opacity-100 lg:opacity-0 group-hover/card:opacity-100 hover:text-red-500 hover:scale-110"
+                        }`}
+                        title={isWishlisted ? "Remove from wishlist" : "Save to wishlist"}
+                      >
+                        {isWishlisted ? (
+                          <FaBookmark className="text-xs text-red-500" />
+                        ) : (
+                          <FaRegBookmark className="text-xs" />
+                        )}
+                      </button>
+
+                      {/* Active Badge (on left for touch devices, right for desktop when not wishlisted) */}
+                      {!isWishlisted && (
+                        <div className="absolute top-3 left-3 lg:left-auto lg:right-3 bg-white/90 dark:bg-[#090d16]/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1.5 z-10 border border-transparent dark:border-slate-700/50 transition-opacity duration-300 lg:group-hover/card:opacity-0 pointer-events-none">
+                          <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+                          <span className="text-[9px] font-bold text-gray-700 dark:text-slate-300 uppercase tracking-wider font-ubuntu">
+                            Active
+                          </span>
+                        </div>
+                      )}
                       
                       <img
                         src={home.imageUrl}
                         alt={home.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500"
                       />
                     </div>
 
                     {/* Content Box */}
                     <div className="p-4 flex flex-col flex-grow">
-                      <h3 className="font-bold font-outfit text-base text-gray-900 dark:text-white leading-snug line-clamp-1 group-hover:text-red-650 transition-colors">
+                      <h3 className="font-bold font-outfit text-base text-gray-900 dark:text-white leading-snug line-clamp-1 group-hover/card:text-red-650 transition-colors">
                         {home.title}
                       </h3>
                       <p className="text-xs text-gray-500 dark:text-slate-400 font-medium flex items-center gap-1 mt-1.5">
@@ -165,6 +256,22 @@ const PopularStays = () => {
       >
         View all homes
       </button>
+
+      {/* Feedback Modals */}
+      <LoadingModal isOpen={isActionLoading} text="Updating your wishlist..." />
+      <SuccessModal 
+        isOpen={isSuccessOpen} 
+        onClose={() => setIsSuccessOpen(false)} 
+        title="Wishlist Updated" 
+        desc={successMsg} 
+        autoCloseTime={2000}
+      />
+      <ErrorModal 
+        isOpen={isErrorOpen} 
+        onClose={() => setIsErrorOpen(false)} 
+        title="Error" 
+        desc={errorMsg} 
+      />
     </div>
   );
 };

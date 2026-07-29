@@ -26,7 +26,15 @@ const postReview = wrapAsync(async (req, res) => {
   home.reviews.push(newReview._id);
   await home.save();
 
-  return res.status(201).json({ message: "Successfully Saved Review" });
+  const populatedReview = await Review.findById(newReview._id).populate({
+    path: "author",
+    select: "name email",
+  });
+
+  return res.status(201).json({ 
+    message: "Successfully Saved Review", 
+    review: populatedReview 
+  });
 });
 
 const deleteReview = wrapAsync(async (req, res) => {

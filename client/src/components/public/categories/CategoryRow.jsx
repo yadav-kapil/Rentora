@@ -1,15 +1,12 @@
-import { FaHome, FaCity, FaBuilding, FaTree } from "react-icons/fa";
-import { BsHouses } from "react-icons/bs";
+import { FaBuilding, FaTree, FaUmbrellaBeach, FaSeedling, FaHome } from "react-icons/fa";
 import { MdOutlineVilla } from "react-icons/md";
-import { HiOutlineDotsHorizontal } from "react-icons/hi";
 
 const categories = [
-  { id: "Villa", name: "Villas", icon: MdOutlineVilla, count: "32+" },
-  { id: "Apartment", name: "Apartments", icon: FaBuilding, count: "45+" },
-  { id: "Duplex", name: "Duplex", icon: BsHouses, count: "18+" },
-  { id: "Cottage", name: "Cottages", icon: FaTree, count: "12+" },
-  { id: "Penthouse", name: "Penthouse", icon: FaCity, count: "8+" },
-  { id: "Studio", name: "Studios", icon: FaBuilding, count: "6+" },
+  { id: "Beachfront", name: "Beachfront", icon: FaUmbrellaBeach, count: "6 Stays" },
+  { id: "Apartment", name: "Apartments", icon: FaBuilding, count: "6 Stays" },
+  { id: "Villa", name: "Villas", icon: MdOutlineVilla, count: "6 Stays" },
+  { id: "Cabin", name: "Cabins", icon: FaTree, count: "6 Stays" },
+  { id: "Farmhouse", name: "Farmhouses", icon: FaSeedling, count: "6 Stays" },
 ];
 
 const CategoryRow = ({ allHomes, setDisplayedHomes, filters, setFilters }) => {
@@ -59,7 +56,7 @@ const CategoryRow = ({ allHomes, setDisplayedHomes, filters, setFilters }) => {
             All Homes
           </span>
           <span className={`text-[10px] font-medium font-ubuntu ${activeCategories.length === 0 ? "text-red-400" : "text-gray-400 dark:text-slate-500"}`}>
-            120+
+            30 Stays
           </span>
         </div>
       </button>

@@ -4,7 +4,8 @@ const homeSchemaValidation = Joi.object({
   home: Joi.object({
     title: Joi.string().trim().required(),
     description: Joi.string().trim().allow("", null),
-    imageUrl: Joi.string().uri().allow("", null),
+    imageUrl: Joi.string().allow("", null),
+    imageUrls: Joi.array().items(Joi.string().trim()).allow(null),
     price: Joi.number().min(0).required(),
     location: Joi.string().trim().required(),
     category: Joi.string().trim().allow("", null),

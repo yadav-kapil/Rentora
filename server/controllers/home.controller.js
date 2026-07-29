@@ -2,8 +2,8 @@ const Home = require("../models/homes.model");
 const Review = require("../models/reviews.model");
 const ExpressError = require("../utils/ExpressError");
 const wrapAsync = require("../utils/wrapAsync");
-
 const Booking = require("../models/booking.model");
+const { uploadToCloudinary } = require("../config/cloudinary.config");
 
 const getHomes = wrapAsync(async (req, res) => {
   const homesList = await Home.find({});
@@ -36,7 +36,22 @@ const getHome = wrapAsync(async (req, res) => {
 });
 
 const postHome = wrapAsync(async (req, res) => {
-  const newHome = new Home(req.body.home);
+  const homeData = req.body.home;
+  if (homeData) {
+    if (homeData.imageUrls && Array.isArray(homeData.imageUrls)) {
+      const uploaded = await Promise.all(
+        homeData.imageUrls.map((url) => uploadToCloudinary(url))
+      );
+      homeData.imageUrls = uploaded.filter(Boolean);
+      if (homeData.imageUrls.length > 0) {
+        homeData.imageUrl = homeData.imageUrls[0];
+      }
+    } else if (homeData.imageUrl) {
+      homeData.imageUrl = await uploadToCloudinary(homeData.imageUrl);
+      homeData.imageUrls = [homeData.imageUrl];
+    }
+  }
+  const newHome = new Home(homeData);
   if (req.user && req.user._id) {
     newHome.host = req.user._id;
   }
@@ -45,7 +60,22 @@ const postHome = wrapAsync(async (req, res) => {
 });
 
 const updateHome = wrapAsync(async (req, res) => {
-  const updated = await Home.findByIdAndUpdate(req.params.id, req.body.home, {
+  const homeData = req.body.home;
+  if (homeData) {
+    if (homeData.imageUrls && Array.isArray(homeData.imageUrls)) {
+      const uploaded = await Promise.all(
+        homeData.imageUrls.map((url) => uploadToCloudinary(url))
+      );
+      homeData.imageUrls = uploaded.filter(Boolean);
+      if (homeData.imageUrls.length > 0) {
+        homeData.imageUrl = homeData.imageUrls[0];
+      }
+    } else if (homeData.imageUrl) {
+      homeData.imageUrl = await uploadToCloudinary(homeData.imageUrl);
+      homeData.imageUrls = [homeData.imageUrl];
+    }
+  }
+  const updated = await Home.findByIdAndUpdate(req.params.id, homeData, {
     returnDocument: "after",
     runValidators: true,
   });
