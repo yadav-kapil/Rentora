@@ -11,13 +11,13 @@ const getNotifications = wrapAsync(async (req, res) => {
     const defaultNotifications = [
       {
         recipient: req.user._id,
-        title: "Welcome to Rentora! 👋",
+        title: "Welcome to Rentora",
         message: "Explore modern homes, villas, cabins, and farmhouse properties matching your tastes.",
         type: "System",
       },
       {
         recipient: req.user._id,
-        title: "Verify your Profile 📝",
+        title: "Verify your Profile",
         message: "Complete your host or guest profile details and set up an avatar image to begin.",
         type: "System",
       }

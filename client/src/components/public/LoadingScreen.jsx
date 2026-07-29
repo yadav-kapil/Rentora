@@ -177,7 +177,7 @@ const LoadingScreen = () => {
         transition={{ delay: 0.9, duration: 0.6 }}
         className="absolute bottom-8 left-0 right-0 text-center text-xs text-gray-400 dark:text-slate-500 font-medium"
       >
-        ❤️ Great homes start with great choices.
+        Great homes start with great choices.
       </motion.div>
     </div>
   );

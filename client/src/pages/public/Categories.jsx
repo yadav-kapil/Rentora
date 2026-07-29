@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { FaTimes } from "react-icons/fa";
 import CategoryHeader from "../../components/public/categories/CategoryHeader";
 import CategoryRow from "../../components/public/categories/CategoryRow";
 import CategorySearch from "../../components/public/categories/CategorySearch";
@@ -94,7 +95,7 @@ const Categories = () => {
               onClick={() => dialogRef.current?.close()}
               className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800/60 rounded-full transition-colors font-bold text-lg text-gray-900 dark:text-white"
             >
-              ✕
+              <FaTimes className="text-sm" />
             </button>
             <h3 className="font-bold text-gray-900 dark:text-white font-outfit text-lg">Filters</h3>
             <button onClick={clearAllFilters} className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-orange-500 font-bold text-sm hover:text-red-700 transition-colors">

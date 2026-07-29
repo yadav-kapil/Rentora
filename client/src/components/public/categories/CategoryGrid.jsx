@@ -58,9 +58,10 @@ const PropertyCard = ({ home, index, isGuest, isWishlisted, handleWishlistToggle
         <div className={`${viewMode === 'list' ? 'w-2/5 sm:w-1/3 h-full' : 'h-52 w-full'} overflow-hidden relative flex-shrink-0`}>
           {/* Subtle Guest Favorite Badge */}
           {avgRating >= 4.5 && (
-            <div className="absolute top-3 left-3 bg-white/95 dark:bg-[#0e1422]/95 backdrop-blur-sm px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1 z-10 border border-gray-150 dark:border-slate-800/80">
+            <div className="absolute top-3 left-3 bg-white/95 dark:bg-[#0e1422]/95 backdrop-blur-sm px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1.5 z-10 border border-gray-150 dark:border-slate-800/80">
+              <FaStar className="text-amber-400 text-[9px]" />
               <span className="text-[10px] font-bold text-gray-700 dark:text-slate-200 tracking-wide font-ubuntu">
-                ★ Guest Favorite
+                Guest Favorite
               </span>
             </div>
           )}

@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { FaHome, FaGlobeAmericas, FaUsers, FaHeart, FaShieldAlt, FaMapMarkedAlt } from "react-icons/fa";
+import { FaHome, FaGlobeAmericas, FaUsers, FaHeart, FaShieldAlt, FaMapMarkedAlt, FaStar } from "react-icons/fa";
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -162,8 +162,8 @@ const About = () => {
             {/* Overlay card */}
             <div className="absolute -bottom-10 -left-10 bg-white dark:bg-[#0e1422] p-6 rounded-2xl shadow-xl shadow-gray-200/50 dark:shadow-black/70 border border-gray-100 dark:border-slate-800/80 animate-bounce" style={{ animationDuration: '3s' }}>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-950/40 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center text-xl">
-                  ★
+                <div className="w-12 h-12 bg-green-100 dark:bg-green-950/40 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center">
+                  <FaStar className="text-xl" />
                 </div>
                 <div>
                   <p className="font-bold font-outfit text-gray-900 dark:text-white">4.9/5 Rating</p>

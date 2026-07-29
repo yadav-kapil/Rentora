@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRevalidator } from "react-router-dom";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaStar, FaRegStar } from "react-icons/fa";
 import { AnimatePresence, motion } from "motion/react";
 import AddReview from "../app/guest/AddReview";
 import ErrorModal from "./common/ErrorModal";
@@ -149,7 +149,11 @@ const Review = ({ id, reviews }) => {
                 {/* Stars */}
                 <div className="flex gap-0.5 text-amber-400 text-base">
                   {[...Array(5)].map((_, i) => (
-                    <span key={i} className="select-none">{i < rev.rating ? "★" : "☆"}</span>
+                    <span key={i} className="select-none">
+                      {i < rev.rating
+                        ? <FaStar className="text-amber-400" />
+                        : <FaRegStar className="text-gray-300 dark:text-slate-600" />}
+                    </span>
                   ))}
                 </div>
 

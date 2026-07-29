@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useRevalidator } from "react-router-dom";
+import { FaStar, FaTimes } from "react-icons/fa";
 
 const AddReview = ({ id, onSuccess, onAddReview }) => {
   const revalidator = useRevalidator();
@@ -92,13 +93,11 @@ const AddReview = ({ id, onSuccess, onAddReview }) => {
                     className="text-3xl transition-transform duration-150 focus:outline-none cursor-pointer transform hover:scale-105 active:scale-95 select-none"
                     aria-label={`Rate ${star} out of 5 stars`}
                   >
-                    <span
+                    <FaStar
                       className={`transition-colors duration-150 ${
                         isActive ? "text-amber-400" : "text-gray-200 dark:text-slate-700"
                       }`}
-                    >
-                      ★
-                    </span>
+                    />
                   </button>
                 );
               })}
@@ -145,7 +144,7 @@ const AddReview = ({ id, onSuccess, onAddReview }) => {
               onClick={() => setReviewError("")}
               className="text-red-500 dark:text-red-400 hover:text-red-750 dark:hover:text-red-300 text-base cursor-pointer flex items-center justify-center p-1"
             >
-              ✖
+              <FaTimes className="text-sm" />
             </button>
           </div>
         )}

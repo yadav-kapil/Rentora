@@ -36,11 +36,11 @@ const POPULAR_AMENITIES = [
 ];
 
 const CATEGORIES = [
-  { value: "Apartment", label: "Apartment", icon: "🏢" },
-  { value: "Villa", label: "Villa", icon: "🏡" },
-  { value: "Cabin", label: "Cabin", icon: "🪵" },
-  { value: "Beachfront", label: "Beachfront", icon: "🏖️" },
-  { value: "Farmhouse", label: "Farmhouse", icon: "🚜" },
+  { value: "Apartment", label: "Apartment" },
+  { value: "Villa",     label: "Villa" },
+  { value: "Cabin",     label: "Cabin" },
+  { value: "Beachfront",label: "Beachfront" },
+  { value: "Farmhouse", label: "Farmhouse" },
 ];
 
 const AddHome = () => {
@@ -400,7 +400,7 @@ const AddHome = () => {
                   <option value="">Select Category</option>
                   {CATEGORIES.map((cat) => (
                     <option key={cat.value} value={cat.value}>
-                      {cat.icon} {cat.label}
+                      {cat.label}
                     </option>
                   ))}
                 </select>
