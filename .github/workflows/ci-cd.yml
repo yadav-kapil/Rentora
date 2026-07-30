@@ -49,7 +49,7 @@ jobs:
     needs: test-build-push
     runs-on:
       - self-hosted
-      - rentora-runner
+      - rentora
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
