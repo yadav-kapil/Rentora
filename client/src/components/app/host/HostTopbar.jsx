@@ -296,7 +296,7 @@ const HostTopbar = () => {
               onClick={() => { setIsMobileMenuOpen(false); navigate("/host/homes"); }}
               className="flex items-center gap-3 bg-white dark:bg-slate-800 px-5 py-3 rounded-full shadow-xl border border-gray-100 dark:border-slate-700 text-sm font-bold text-gray-700 dark:text-slate-200 hover:text-red-600 dark:hover:text-red-400 transition-colors"
             >
-              All Listings <FaList className="text-lg text-red-500" />
+              My Listings <FaList className="text-lg text-red-500" />
             </button>
             <button 
               onClick={() => { setIsMobileMenuOpen(false); navigate("/host/bookings"); }}
