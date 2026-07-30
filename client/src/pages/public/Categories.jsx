@@ -23,7 +23,7 @@ const Categories = () => {
   const fetchHomes = async () => {
     setLoading(true);
     try {
-      let url = `${import.meta.env.VITE_BACKEND_URL}/api/homes`;
+      let url = "/api/homes";
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch homes");
       const data = await res.json();

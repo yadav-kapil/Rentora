@@ -5,7 +5,7 @@
 ## 📁 Architecture Overview
 
 ```
-queue-cure-26/
+rentora/
 ├── client/          ← React + Vite + TailwindCSS v4 + Socket.IO
 ├── server/          ← Node.js + Express + MongoDB + Socket.IO
 ├── docker-compose.yaml        ← Dev: builds from source
@@ -27,7 +27,7 @@ queue-cure-26/
 | **CI/CD Workflow** | No `.env` injection on server at deploy time | Runtime env_file on VM |
 | **Server Dockerfile** | `.env` copied into image via `COPY . .` — **secrets leak!** | `RUN rm -f .env` in Dockerfile |
 | **Server Dockerfile** | No `HEALTHCHECK` defined | Added `HEALTHCHECK` instruction |
-| **docker-compose.prod.yaml** | `env_file: .env` references root `.env` missing on server | Fixed path to `/home/ubuntu/app/.env` |
+| **docker-compose.prod.yaml** | `env_file: .env` references root `.env` missing on server | Fixed path to `/home/ubuntu/rentora/.env` |
 | **nginx.conf** | No `gzip`, no security headers, no rate limiting | Added all three |
 | **Deploy step** | No health-check or rollback logic | 60s health-check loop + auto-rollback |
 
@@ -129,75 +129,21 @@ CMD ["nginx", "-g", "daemon off;"]
 ### 3. nginx.conf — `client/nginx.conf`
 
 ```nginx
-# WebSocket upgrade map
-map $http_upgrade $connection_upgrade {
-    default upgrade;
-    ''      close;
-}
-
-# Rate limiting zones (protect API from abuse)
-limit_req_zone $binary_remote_addr zone=api_limit:10m rate=30r/s;
-
 server {
     listen 80;
-    server_tokens off;
 
-    # ── Security Headers ──────────────────────────────────────
-    add_header X-Frame-Options           "SAMEORIGIN"            always;
-    add_header X-Content-Type-Options    "nosniff"               always;
-    add_header X-XSS-Protection          "1; mode=block"         always;
-    add_header Referrer-Policy           "strict-origin-when-cross-origin" always;
-
-    # ── Gzip Compression ─────────────────────────────────────
-    gzip on;
-    gzip_comp_level 6;
-    gzip_types text/plain text/css text/javascript application/javascript
-               application/json application/xml image/svg+xml;
-    gzip_vary on;
-
-    # ── API Proxy ─────────────────────────────────────────────
     location /api/ {
-        limit_req zone=api_limit burst=50 nodelay;
-
-        proxy_pass         http://server:3003;
-        proxy_http_version 1.1;
-
-        proxy_set_header Host              $host;
-        proxy_set_header X-Real-IP         $remote_addr;
-        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_pass http://server:3003;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-
-        proxy_connect_timeout 10s;
-        proxy_read_timeout    30s;
     }
 
-    # ── Socket.IO Proxy ───────────────────────────────────────
-    location /socket.io/ {
-        proxy_pass         http://server:3003;
-        proxy_http_version 1.1;
-
-        proxy_set_header Upgrade    $http_upgrade;
-        proxy_set_header Connection $connection_upgrade;
-        proxy_set_header Host       $host;
-        proxy_set_header X-Real-IP  $remote_addr;
-        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-
-        proxy_read_timeout  3600s;
-        proxy_send_timeout  3600s;
-        proxy_buffering     off;
-    }
-
-    # ── Static Assets (SPA) ───────────────────────────────────
     location / {
-        root       /usr/share/nginx/html;
-        index      index.html index.htm;
-        try_files  $uri $uri/ /index.html;
-
-        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2|woff|ttf)$ {
-            expires 1y;
-            add_header Cache-Control "public, immutable";
-        }
+        root /usr/share/nginx/html;
+        index index.html;
+        try_files $uri $uri/ /index.html;
     }
 }
 ```
@@ -209,19 +155,21 @@ server {
 ```yaml
 version: '3.9'
 
+name: rentora
+
 services:
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: queue-cure-server
+    container_name: rentora-server
     restart: unless-stopped
     env_file:
       - ./server/.env
     ports:
       - "3003:3003"
     networks:
-      - queue-cure-network
+      - rentora-network
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3003/api/health"]
       interval: 30s
@@ -233,7 +181,7 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
-    container_name: queue-cure-client
+    container_name: rentora-client
     restart: unless-stopped
     ports:
       - "5173:80"
@@ -241,10 +189,11 @@ services:
       server:
         condition: service_healthy
     networks:
-      - queue-cure-network
+      - rentora-network
 
 networks:
-  queue-cure-network:
+  rentora-network:
+    name: rentora-network
     driver: bridge
 ```
 
@@ -255,15 +204,17 @@ networks:
 ```yaml
 version: '3.9'
 
+name: rentora
+
 services:
   server:
-    image: yadavkapil9560/queue-cure-server:${IMAGE_TAG:-latest}
-    container_name: queue-cure-server
+    image: yadavkapil9560/rentora-server:${IMAGE_TAG:-latest}
+    container_name: rentora-server
     restart: unless-stopped
     env_file:
-      - /home/ubuntu/app/.env
+      - /home/ubuntu/rentora/.env
     networks:
-      - queue-cure-prod-network
+      - rentora-prod-network
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3003/api/health"]
       interval: 30s
@@ -272,8 +223,8 @@ services:
       start_period: 20s
 
   client:
-    image: yadavkapil9560/queue-cure-client:${IMAGE_TAG:-latest}
-    container_name: queue-cure-client
+    image: yadavkapil9560/rentora-client:${IMAGE_TAG:-latest}
+    container_name: rentora-client
     restart: unless-stopped
     ports:
       - "8080:80"
@@ -281,10 +232,11 @@ services:
       server:
         condition: service_healthy
     networks:
-      - queue-cure-prod-network
+      - rentora-prod-network
 
 networks:
-  queue-cure-prod-network:
+  rentora-prod-network:
+    name: rentora-prod-network
     driver: bridge
 ```
 
@@ -307,8 +259,8 @@ concurrency:
 
 env:
   REGISTRY: docker.io
-  SERVER_IMAGE: yadavkapil9560/queue-cure-server
-  CLIENT_IMAGE: yadavkapil9560/queue-cure-client
+  SERVER_IMAGE: yadavkapil9560/rentora-server
+  CLIENT_IMAGE: yadavkapil9560/rentora-client
 
 jobs:
   # ─────────────────────────────────────────────────────────────
@@ -432,7 +384,7 @@ jobs:
     name: Deploy to Production
     runs-on:
       - self-hosted
-      - queue-cure-runner
+      - rentora-runner
     needs: build-push
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: production
@@ -453,7 +405,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          APP_DIR="/home/ubuntu/app"
+          APP_DIR="/home/ubuntu/rentora"
           COMPOSE_FILE="${APP_DIR}/docker-compose.yaml"
 
           sudo mkdir -p "$APP_DIR"
@@ -467,8 +419,8 @@ jobs:
 
           echo "Waiting for services to become healthy..."
           for i in $(seq 1 12); do
-            SERVER_HEALTH=$(sudo docker inspect --format='{{.State.Health.Status}}' queue-cure-server 2>/dev/null || echo "unknown")
-            CLIENT_HEALTH=$(sudo docker inspect --format='{{.State.Health.Status}}' queue-cure-client 2>/dev/null || echo "unknown")
+            SERVER_HEALTH=$(sudo docker inspect --format='{{.State.Health.Status}}' rentora-server 2>/dev/null || echo "unknown")
+            CLIENT_HEALTH=$(sudo docker inspect --format='{{.State.Health.Status}}' rentora-client 2>/dev/null || echo "unknown")
 
             if [ "$SERVER_HEALTH" = "healthy" ] && [ "$CLIENT_HEALTH" = "healthy" ]; then
               echo "All services are healthy!"
@@ -551,15 +503,15 @@ Go to: **GitHub repo → Settings → Secrets and variables → Actions → New 
 On your production server, create the env file Docker Compose loads at runtime:
 
 ```bash
-sudo mkdir -p /home/ubuntu/app
-sudo nano /home/ubuntu/app/.env
+sudo mkdir -p /home/ubuntu/rentora
+sudo nano /home/ubuntu/rentora/.env
 ```
 
 Fill in your production values (never commit this):
 
 ```env
 PORT=3003
-MONGO_URI=mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/queue-cure
+MONGO_URI=mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/rentora
 JWT_SECRET=<strong-random-secret>
 CLIENT_URI=https://yourdomain.com
 COOKIE_SECRET=<strong-random-secret>
@@ -579,9 +531,9 @@ EMAIL_USER=<your-email>
 # 1. GitHub repo → Settings → Actions → Runners → New self-hosted runner
 # 2. Follow the Linux instructions, then label it:
 
-./config.sh --url https://github.com/<your-username>/queue-cure-26 \
+./config.sh --url https://github.com/<your-username>/rentora \
             --token <RUNNER_TOKEN> \
-            --labels queue-cure-runner
+            --labels rentora-runner
 
 # 3. Install as a service so it survives reboots
 sudo ./svc.sh install
@@ -601,8 +553,7 @@ sudo ./svc.sh start
 | **Rollback** | Manual | Auto-rollback if health check fails |
 | **Health checks** | None | Defined in Dockerfile + Compose |
 | **Startup ordering** | `depends_on: server` | `depends_on: condition: service_healthy` |
-| **nginx security** | No headers | X-Frame-Options, nosniff, rate limiting |
-| **nginx perf** | No compression | gzip on all text/js/css, 1yr asset caching |
+| **nginx routing** | API needed separate frontend URL | `/api` proxies to server, `/` serves React |
 | **PR CI** | No CI on PRs | test job runs on every PR |
 | **Concurrency** | Queues up old runs | Cancels stale runs on new push |
 | **Docker login** | echo password pipe | docker/login-action (secure, no logs) |

@@ -539,7 +539,7 @@ export default EditHome;
 
 export const editHomeLoader = async ({ params }) => {
   const res = await fetch(
-    `${import.meta.env.VITE_BACKEND_URL}/api/homes/${params.id}`,
+    `/api/homes/${params.id}`,
   );
 
   if (!res.ok) {
@@ -578,7 +578,7 @@ export const editHomeAction = async ({ request, params }) => {
   }
 
   const res = await fetch(
-    `${import.meta.env.VITE_BACKEND_URL}/api/homes/${params.id}`,
+    `/api/homes/${params.id}`,
     {
       method: "PUT",
       headers: {

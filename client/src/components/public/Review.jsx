@@ -22,7 +22,7 @@ const Review = ({ id, reviews }) => {
     if (isLoggedin && user?.role === "User") {
       const checkUserBookings = async () => {
         try {
-          const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/bookings`, {
+          const res = await fetch("/api/bookings", {
             credentials: "include",
           });
           if (res.ok) {
@@ -62,7 +62,7 @@ const Review = ({ id, reviews }) => {
   const handleDelete = async (reviewId) => {
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/homes/${id}/reviews/${reviewId}`,
+        `/api/homes/${id}/reviews/${reviewId}`,
         {
           method: "DELETE",
           credentials: "include",

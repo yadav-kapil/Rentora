@@ -18,7 +18,7 @@ export const AuthContextProvider = ({ children }) => {
     const checkUser = async () => {
       try {
         const res = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/api/user/me`,
+          "/api/user/me",
           {
             method: "GET",
             credentials: "include",

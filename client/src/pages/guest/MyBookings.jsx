@@ -16,7 +16,7 @@ const MyBookings = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/bookings`, {
+        const res = await fetch("/api/bookings", {
           credentials: "include",
         });
         if (!res.ok) {
@@ -43,7 +43,7 @@ const MyBookings = () => {
 
     setIsCancelling(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/bookings/${selectedBookingId}/status`, {
+      const res = await fetch(`/api/bookings/${selectedBookingId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

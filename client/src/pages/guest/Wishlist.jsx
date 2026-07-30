@@ -43,7 +43,7 @@ const Wishlist = () => {
   const fetchWishlist = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/wishlist`, {
+      const res = await fetch("/api/wishlist", {
         credentials: "include",
       });
       if (!res.ok) {
@@ -64,7 +64,7 @@ const Wishlist = () => {
 
     setIsActionLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/wishlist/toggle`, {
+      const res = await fetch("/api/wishlist/toggle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

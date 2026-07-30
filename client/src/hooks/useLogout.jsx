@@ -8,7 +8,7 @@ export const useLogout = () => {
   const logout = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/logout`, {
+      const res = await fetch("/api/user/logout", {
         method: "POST",
         credentials: "include",
       });

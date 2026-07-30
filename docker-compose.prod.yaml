@@ -1,26 +1,29 @@
 version: '3.9'
 
+name: rentora
+
 services:
   server:
-    image: yadavkapil9560/queue-cure-server:${IMAGE_TAG:-latest}
-    container_name: airbnb-server
+    image: yadavkapil9560/rentora-server:${IMAGE_TAG:-latest}
+    container_name: rentora-server
     restart: unless-stopped
     env_file:
-      - /home/ubuntu/airbnb/.env
+      - /home/ubuntu/rentora/.env
     networks:
-      - airbnb-prod-network
+      - rentora-prod-network
 
   client:
-    image: yadavkapil9560/queue-cure-client:${IMAGE_TAG:-latest}
-    container_name: airbnb-client
+    image: yadavkapil9560/rentora-client:${IMAGE_TAG:-latest}
+    container_name: rentora-client
     restart: unless-stopped
     ports:
       - "8080:80"
     depends_on:
       - server
     networks:
-      - airbnb-prod-network
+      - rentora-prod-network
 
 networks:
-  airbnb-prod-network:
+  rentora-prod-network:
+    name: rentora-prod-network
     driver: bridge

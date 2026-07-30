@@ -31,7 +31,7 @@ const AddReview = ({ id, onSuccess, onAddReview }) => {
     };
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/homes/${id}/reviews`,
+        `/api/homes/${id}/reviews`,
         {
           method: "POST",
           headers: {

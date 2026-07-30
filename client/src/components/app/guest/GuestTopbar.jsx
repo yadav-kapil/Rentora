@@ -36,7 +36,7 @@ const GuestTopbar = () => {
 
   const fetchNotificationsSilent = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/notifications`, {
+      const res = await fetch("/api/notifications", {
         credentials: "include",
       });
       if (res.ok) {
@@ -53,7 +53,7 @@ const GuestTopbar = () => {
     if (!isNotifOpen) {
       setNotifLoading(true);
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/notifications`, {
+        const res = await fetch("/api/notifications", {
           credentials: "include",
         });
         if (res.ok) {
@@ -73,7 +73,7 @@ const GuestTopbar = () => {
 
   const handleMarkRead = async (id) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/notifications/${id}/read`, {
+      const res = await fetch(`/api/notifications/${id}/read`, {
         method: "PATCH",
         credentials: "include",
       });
@@ -87,7 +87,7 @@ const GuestTopbar = () => {
 
   const handleMarkAllRead = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/notifications/read-all`, {
+      const res = await fetch("/api/notifications/read-all", {
         method: "PATCH",
         credentials: "include",
       });

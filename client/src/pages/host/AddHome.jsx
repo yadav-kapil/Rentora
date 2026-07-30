@@ -544,7 +544,7 @@ export const addHomeAction = async ({ request }) => {
       home.amenities = [];
     }
 
-    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/homes`, {
+    const res = await fetch("/api/homes", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

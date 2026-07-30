@@ -1,4 +1,4 @@
-name: CI/CD
+name: Rentora CI/CD
 
 on:
   push:
@@ -35,7 +35,7 @@ jobs:
           context: ./server
           file: ./server/Dockerfile
           push: true
-          tags: yadavkapil9560/queue-cure-server:latest
+          tags: yadavkapil9560/rentora-server:latest
 
       - name: Build and Push Client
         uses: docker/build-push-action@v5
@@ -43,22 +43,22 @@ jobs:
           context: ./client
           file: ./client/Dockerfile
           push: true
-          tags: yadavkapil9560/queue-cure-client:latest
+          tags: yadavkapil9560/rentora-client:latest
 
   deploy:
     needs: test-build-push
     runs-on:
       - self-hosted
-      - queue-cure-runner
+      - rentora-runner
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Copy Compose and Deploy
         run: |
-          sudo mkdir -p /home/ubuntu/airbnb
-          sudo cp docker-compose.prod.yaml /home/ubuntu/airbnb/docker-compose.yaml
-          cd /home/ubuntu/airbnb
+          sudo mkdir -p /home/ubuntu/rentora
+          sudo cp docker-compose.prod.yaml /home/ubuntu/rentora/docker-compose.yaml
+          cd /home/ubuntu/rentora
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
           sudo docker compose pull
           sudo docker compose up -d --force-recreate --remove-orphans

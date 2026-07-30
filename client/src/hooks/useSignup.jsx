@@ -11,7 +11,7 @@ export const useSignup = () => {
       setIsLoading(true);
       setErr(null);
       const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/user/signup`,
+        "/api/user/signup",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

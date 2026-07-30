@@ -48,7 +48,7 @@ const PopularStays = () => {
   useEffect(() => {
     const fetchHomes = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/homes`);
+        const res = await fetch("/api/homes");
         if (!res.ok) {
           throw new Error("Failed to fetch homes");
         }
@@ -72,7 +72,7 @@ const PopularStays = () => {
 
   const fetchWishlistIds = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/wishlist/ids`, {
+      const res = await fetch("/api/wishlist/ids", {
         credentials: "include",
       });
       if (res.ok) {
@@ -95,7 +95,7 @@ const PopularStays = () => {
 
     setIsActionLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/wishlist/toggle`, {
+      const res = await fetch("/api/wishlist/toggle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

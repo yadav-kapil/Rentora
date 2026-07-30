@@ -84,7 +84,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
         formData.append("dp", dp.trim());
       }
 
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/profile`, {
+      const res = await fetch("/api/user/profile", {
         method: "PATCH",
         credentials: "include",
         body: formData,

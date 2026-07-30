@@ -262,8 +262,8 @@ const HostHome = () => {
     setLoading(true);
     try {
       const [homesRes, bookingsRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/homes/my`,       { credentials: "include" }),
-        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/bookings/host`,  { credentials: "include" }),
+        fetch("/api/homes/my",       { credentials: "include" }),
+        fetch("/api/bookings/host",  { credentials: "include" }),
       ]);
       if (!homesRes.ok) throw new Error("Failed to fetch listings");
       setHomes(await homesRes.json());
@@ -281,7 +281,7 @@ const HostHome = () => {
   const handleDelete = async () => {
     if (!itemToDelete) return;
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/homes/${itemToDelete}`, {
+      const res = await fetch(`/api/homes/${itemToDelete}`, {
         method: "DELETE", credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to delete home");
@@ -526,7 +526,7 @@ const HostHome = () => {
 export default HostHome;
 
 export const getHostHomes = async () => {
-  const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/homes`, {
+  const res = await fetch("/api/homes", {
     credentials: "include",
   });
   if (!res.ok) throw new Error("Internal Server Error");

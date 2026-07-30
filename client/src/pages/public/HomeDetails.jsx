@@ -64,7 +64,7 @@ const Home = () => {
     const fetchHome = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/homes/${id}`, {
+        const res = await fetch(`/api/homes/${id}`, {
           credentials: 'include'
         });
         if (!res.ok) throw new Error("Home Not Found");

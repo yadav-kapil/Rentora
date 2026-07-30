@@ -65,7 +65,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
 
     setIsLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/change-password`, {
+      const res = await fetch("/api/user/change-password", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

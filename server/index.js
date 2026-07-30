@@ -51,6 +51,9 @@ app.use((err, req, res, next) => {
   console.error("ERROR : ",err.message);
   const status = err.status || 500;
   const message = err.message || "Internal Server Error";
+  if (res.headersSent) {
+    return next(err);
+  }
   res.status(status).json({
     success: false,
     message,

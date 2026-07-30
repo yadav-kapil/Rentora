@@ -37,7 +37,7 @@ const GuestHomeDetails = () => {
     setIsBooking(true);
     setError(null);
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/bookings`, {
+      const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -169,7 +169,7 @@ export default GuestHomeDetails;
 
 export const guestHomeLoader = async ({ params }) => {
   const res = await fetch(
-    `${import.meta.env.VITE_BACKEND_URL}/api/homes/${params.id}`,
+    `/api/homes/${params.id}`,
     {
       credentials : 'include'
     }

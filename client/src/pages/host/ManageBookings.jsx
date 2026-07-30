@@ -50,7 +50,7 @@ const ManageBookings = () => {
   const fetchHostBookings = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/bookings/host`, {
+      const res = await fetch("/api/bookings/host", {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to load host bookings.");
@@ -66,7 +66,7 @@ const ManageBookings = () => {
   const handleUpdateStatus = async (bookingId, newStatus) => {
     setIsUpdatingStatus(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/bookings/${bookingId}/status`, {
+      const res = await fetch(`/api/bookings/${bookingId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

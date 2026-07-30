@@ -1,32 +1,35 @@
 version: '3.9'
 
+name: rentora
+
 services:
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: airbnb-server
+    container_name: rentora-server
     restart: unless-stopped
     env_file:
       - ./server/.env
     ports:
       - "3003:3003"
     networks:
-      - airbnb-network
+      - rentora-network
 
   client:
     build:
       context: ./client
       dockerfile: Dockerfile
-    container_name: airbnb-client
+    container_name: rentora-client
     restart: unless-stopped
     ports:
       - "5173:80"
     depends_on:
       - server
     networks:
-      - airbnb-network
+      - rentora-network
 
 networks:
-  airbnb-network:
+  rentora-network:
+    name: rentora-network
     driver: bridge

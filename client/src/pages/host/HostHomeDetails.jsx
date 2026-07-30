@@ -86,8 +86,8 @@ const HostHomeDetails = () => {
     setError(null);
     try {
       const [homeRes, bookingsRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/homes/${id}`),
-        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/bookings/home/${id}`, {
+        fetch(`/api/homes/${id}`),
+        fetch(`/api/bookings/home/${id}`, {
           credentials: "include",
         }),
       ]);
@@ -115,7 +115,7 @@ const HostHomeDetails = () => {
   const handleDelete = async () => {
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/homes/${home._id}`,
+        `/api/homes/${home._id}`,
         { method: "DELETE", credentials: "include" }
       );
       if (!res.ok) throw new Error("Failed to delete home");

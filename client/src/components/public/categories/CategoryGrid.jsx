@@ -190,7 +190,7 @@ const CategoryGrid = ({ homes, loading, onOpenFilters }) => {
 
   const fetchWishlistIds = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/wishlist/ids`, {
+      const res = await fetch("/api/wishlist/ids", {
         credentials: "include",
       });
       if (res.ok) {
@@ -213,7 +213,7 @@ const CategoryGrid = ({ homes, loading, onOpenFilters }) => {
 
     setIsActionLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/wishlist/toggle`, {
+      const res = await fetch("/api/wishlist/toggle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
