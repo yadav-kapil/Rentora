@@ -167,7 +167,7 @@ const HostTopbar = () => {
             onClick={() => navigate("/host/homes")}
             className="hidden md:flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
           >
-            <FaList className="text-lg" /> <span>All Listings</span>
+            <FaList className="text-lg" /> <span>My Listings</span>
           </button>
 
           <button 
